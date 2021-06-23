@@ -26,11 +26,11 @@ URLS = [
 
 def generate_request(url):
     time.sleep(random.randint(1, 3))
-    return requests.get(url), url
+    return requests.get(url)
 
 
-def check_status(result, url):
-    logging.info(f'Server {url} response is {result.status_code}')
+def check_status(response, url):
+    logging.info(f'Server {url} response is {response.status_code}')
 
 
 def sum(num_one, num_two):
@@ -40,12 +40,18 @@ def sum(num_one, num_two):
 if __name__ == '__main__':
     with ThreadPoolExecutor(max_workers=3) as executor:
         # executor.submit() returns a Future
-        futures = [executor.submit(generate_request, url) for url in URLS]
+        # futures = [executor.submit(generate_request, url) for url in URLS]
 
         # as_completed is a generator, and returns (by yield) the completed futures
-        for future in as_completed(futures):  
-            result, url = future.result()
-            check_status(result, url)
+        # for future in as_completed(futures):
+        #     result, url = future.result()
+        #     check_status(result, url)
+
+        # map is a generator, in this case returns the method result
+        results = executor.map(generate_request, URLS)
+
+        for url, response in zip(URLS, results):
+            check_status(response, url)
 
         # Add a new task to the first available thread
         future = executor.submit(sum, 10, 20)
